@@ -22,6 +22,7 @@ pipeline {
         }
         stage('CODE-BUILD') {
             steps {
+                //sh 'whoami'
                 sh 'mvn clean install'
             }
         }
