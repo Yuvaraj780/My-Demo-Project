@@ -37,12 +37,14 @@ pipeline {
                 }
             }
         }
+        
         stage('CODE-BUILD') {
             steps {
                 sh 'whoami'
                 sh 'mvn clean install'
             }
         }
+        
         stage('Docker Build & Push to ECR') {
             steps {
                 script {
@@ -56,6 +58,7 @@ pipeline {
                 }
             }
         }
+        
         stage('Deploy') {
             agent { label 'ECR-Slave'}
             steps {
