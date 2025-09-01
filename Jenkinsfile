@@ -17,7 +17,7 @@ pipeline {
     stages {
         stage('CODE-PULL') {
             steps {
-                git 'https://github.com/Yuvaraj780/My-Demo-Project.git'
+                git 'https://github.com/iam-yuvi/My-Demo-Project.git'
             }
         }
         
