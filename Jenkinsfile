@@ -21,7 +21,6 @@ pipeline {
             }
         }
         
-        
         stage('SonarQube Analysis') {
             steps {
                 echo "Starting SonarQube static code analysis..."
@@ -38,8 +37,6 @@ pipeline {
                 }
             }
         }
-        
-        
         
         stage('CODE-BUILD') {
             steps {
