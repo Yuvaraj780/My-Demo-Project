@@ -1,10 +1,10 @@
 pipeline {
-    agent {label 'master'}
+    agent { label 'master' }
     tools {
         maven 'mvn'
     }
     triggers {
-        githubPush()  
+        githubPush()
     }
     
     environment {
@@ -27,11 +27,11 @@ pipeline {
                 withSonarQubeEnv("${env.SONARQUBE_ENV}") {
                     withCredentials([string(credentialsId: 'sonar-id', variable: 'SONAR_TOKEN')]) {
                         sh """
-                           mvn clean verify sonar:sonar \
-                          -Dsonar.projectKey=cicd-proj \
-                          -Dsonar.projectName='cicd-proj' \
-                          -Dsonar.host.url=http://34.234.85.121:9000 \
-                          -Dsonar.token=$SONAR_TOKEN
+                          mvn clean verify sonar:sonar \
+                              -Dsonar.projectKey=demo-prj \
+                              -Dsonar.projectName='demo-prj' \
+                              -Dsonar.host.url=http://18.212.234.111:9000 \
+                              -Dsonar.token=$SONAR_TOKEN
                         """
                     }
                 }
@@ -50,6 +50,7 @@ pipeline {
                 script {
                     echo "Building Docker image and pushing to ECR..."
                     withAWS(region: "${env.AWS_REGION}", credentials: 'aws-creds') {
+                        sh 'whoami'
                         sh 'docker build -t $IMAGE_NAME .'
                         sh "aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin ${ECR_REPO.split('/')[0]}"
                         sh 'docker tag $IMAGE_NAME:latest $ECR_REPO:latest'
@@ -63,18 +64,37 @@ pipeline {
             agent { label 'ECR-Slave'}
             steps {
                 script {
-                    echo "Building Docker image and pushing to ECR..."
+                    echo "Deploying container from ECR..."
                     withAWS(region: "${env.AWS_REGION}", credentials: 'aws-creds') {
-                      sh 'whoami'
-                       sh "aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin ${ECR_REPO.split('/')[0]}"
-                       sh 'docker pull $ECR_REPO:latest'
-                       sh 'docker stop con-1'
-                       sh 'docker rm con-1'
-                       sh 'docker run -itd --name con-1 -p "81:8080" $ECR_REPO:latest '
+                        sh 'whoami'
+                        sh "aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin ${ECR_REPO.split('/')[0]}"
+                        sh 'docker pull $ECR_REPO:latest'
+                        sh 'docker stop con-1 || true'
+                        sh 'docker rm con-1 || true'
+                        sh 'docker run -itd --name con-1 -p "81:8080" $ECR_REPO:latest'
                     }
                 }
             }
         }
-        
+    }  
+    
+    post {
+        success {
+            emailext (
+                subject: "✅ SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: """<p>Good news!</p>
+                         <p>Job <b>${env.JOB_NAME} #${env.BUILD_NUMBER}</b> finished successfully.</p>
+                         <p>Check console: <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>""",
+                to: 'yuviyuvaraj7639@gmail.com'
+            )
+        }
+        failure {
+            emailext (
+                subject: "❌ FAILURE: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: """<p>Job <b>${env.JOB_NAME} #${env.BUILD_NUMBER}</b> has failed.</p>
+                         <p>Check console: <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>""",
+                to: 'yuviyuvaraj7639@gmail.com'
+            )
+        }
     }
 }
