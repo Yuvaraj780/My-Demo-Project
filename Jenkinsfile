@@ -76,6 +76,30 @@ pipeline {
                 }
             }
         }
+
+        // FOR DEPLOYING INTO EKS CLUSTER!
+
+             // stage('DEPLOY-TO-EKS') {
+                    //     steps {
+                    //         script {
+                    //             withAWS(region: env.AWS_REGION, credentials: 'aws-creds') {
+                    //                 echo "Updating kubeconfig for EKS cluster..."
+                    //                 sh """
+                    //                   aws eks update-kubeconfig --name ${env.CLUSTER_NAME} --region ${env.AWS_REGION}
+                    //                 """
+                                    
+                    //                 echo "Deploying new image to EKS..."
+                    //                 sh """
+                    //                   kubectl set image deployment/${env.DEPLOYMENT_NAME} \
+                    //                   my-container=${env.ECR_REPO}:latest \
+                    //                   -n ${env.K8S_NAMESPACE}
+                    //                 """
+            
+                    //             }
+                    //         }
+                    //     }
+                    // }
+                    
     }  
     
     post {
